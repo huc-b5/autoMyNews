@@ -1,0 +1,44 @@
+name: Daily Update
+
+# 触发条件：
+on:
+  schedule:
+    # 每天国际标准时间 00:00 运行 (北京时间上午 8:00)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 允许你手动点击按钮触发测试
+
+# 权限配置：允许 Action 写入代码
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run script
+      run: python main.py
+
+    - name: Commit and Push changes
+      run: |
+        # 配置 git 用户信息（替换为你自己的 GitHub 邮箱和用户名）
+        # 只有配置正确，绿格子才会算在你头上！
+        git config --global user.email "huangshu@gshu.shop"
+        git config --global user.name "huc-b5"
+        
+        # 提交代码
+        git add README.md
+        # 如果文件有变动才提交，避免报错
+        git diff --quiet && git diff --staged --quiet || (git commit -m "📝 Daily update: $(date +'%Y-%m-%d')" && git push)
